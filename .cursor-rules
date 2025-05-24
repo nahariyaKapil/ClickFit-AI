@@ -1,0 +1,123 @@
+# Cursor Rules for CalAItest iOS App
+
+## Project Context
+Building a CalAItest-style iOS app using SwiftUI that analyzes food photos for nutritional information using OpenAI Vision API.
+
+## Code Style Preferences
+- Use SwiftUI for all UI components
+- Follow MVVM architecture pattern
+- Use async/await for all asynchronous operations
+- Prefer @StateObject, @ObservedObject, and @EnvironmentObject for state management
+- Use Combine framework for reactive programming where applicable
+
+## Swift Conventions
+- Use descriptive variable names (camelCase)
+- Prefer `let` over `var` when possible
+- Use trailing closure syntax
+- Use guard statements for early returns
+- Group related functionality with MARK: comments
+
+## File Structure
+```
+CalAItest/
+├── Models/
+│   ├── FoodAnalysis.swift
+│   ├── Ingredient.swift
+│   └── NutritionInfo.swift
+├── ViewModels/
+│   ├── CameraViewModel.swift
+│   ├── AnalysisViewModel.swift
+│   └── HistoryViewModel.swift
+├── Views/
+│   ├── Camera/
+│   ├── Analysis/
+│   └── History/
+├── Services/
+│   ├── OpenAIService.swift
+│   └── DataPersistence.swift
+└── Utils/
+    └── Extensions.swift
+```
+
+## SwiftUI Best Practices
+- Extract reusable views into separate components
+- Use ViewModifiers for common styling
+- Implement proper loading states with ProgressView
+- Handle errors gracefully with alerts
+- Use environment objects for app-wide state
+
+## API Integration Rules
+- Always handle network errors
+- Use proper async/await patterns
+- Implement retry logic for failed requests
+- Cache responses when appropriate
+- Use Codable for JSON parsing
+
+## Performance Guidelines
+- Compress images before sending to API (max 1MB)
+- Use lazy loading for lists
+- Implement proper image caching
+- Minimize view redraws with proper state management
+
+## Testing Requirements
+- Write unit tests for ViewModels
+- Test all API response scenarios
+- Include edge cases for data parsing
+
+## Git Commit Format
+- feat: for new features
+- fix: for bug fixes
+- refactor: for code refactoring
+- docs: for documentation
+- style: for formatting changes
+- test: for test additions
+
+## Common Code Patterns
+
+### ViewModel Template
+```swift
+@MainActor
+class FeatureViewModel: ObservableObject {
+    @Published var isLoading = false
+    @Published var error: Error?
+    
+    func performAction() async {
+        isLoading = true
+        defer { isLoading = false }
+        
+        do {
+            // Action logic
+        } catch {
+            self.error = error
+        }
+    }
+}
+```
+
+### View Template
+```swift
+struct FeatureView: View {
+    @StateObject private var viewModel = FeatureViewModel()
+    
+    var body: some View {
+        ZStack {
+            // Main content
+        }
+        .task {
+            await viewModel.loadData()
+        }
+        .alert("Error", isPresented: .constant(viewModel.error != nil)) {
+            Button("OK") { viewModel.error = nil }
+        }
+    }
+}
+```
+
+## AI Assistant Instructions
+When generating code:
+1. Always use SwiftUI and modern Swift features
+2. Include proper error handling
+3. Add helpful comments for complex logic
+4. Suggest performance optimizations
+5. Follow Apple's Human Interface Guidelines
+6. Ensure accessibility support (VoiceOver, Dynamic Type)
