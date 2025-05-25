@@ -434,8 +434,6 @@ struct ModernMacroBar: View {
 
 // MARK: - Modern Empty State View
 struct ModernEmptyStateView: View {
-    @State private var animate = false
-    
     var body: some View {
         VStack(spacing: 25) {
             ZStack {
@@ -448,8 +446,7 @@ struct ModernEmptyStateView: View {
                         )
                     )
                     .frame(width: 100, height: 100)
-                    .scaleEffect(animate ? 1.1 : 0.9)
-                    .opacity(animate ? 0.5 : 0.8)
+                    .opacity(0.8)
                 
                 Image(systemName: "camera.fill")
                     .font(.system(size: 50))
@@ -468,11 +465,6 @@ struct ModernEmptyStateView: View {
             }
         }
         .padding()
-        .onAppear {
-            withAnimation(.easeInOut(duration: 2).repeatForever(autoreverses: true)) {
-                animate = true
-            }
-        }
     }
 }
 

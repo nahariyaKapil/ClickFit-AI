@@ -1,7 +1,7 @@
-# Cursor Rules for CalAItest iOS App
+# Cursor Rules for ClickFit AI iOS App
 
 ## Project Context
-Building a CalAItest-style iOS app using SwiftUI that analyzes food photos for nutritional information using OpenAI Vision API.
+Building a ClickFit AI-style iOS app using SwiftUI that analyzes food photos for nutritional information using OpenAI Vision API.
 
 ## Code Style Preferences
 - Use SwiftUI for all UI components
@@ -19,11 +19,13 @@ Building a CalAItest-style iOS app using SwiftUI that analyzes food photos for n
 
 ## File Structure
 ```
-CalAItest/
+ClickFit AI/
 ├── Models/
+│   ├── AnalysisResult.swift
 │   ├── FoodAnalysis.swift
 │   ├── Ingredient.swift
-│   └── NutritionInfo.swift
+│   ├── NutritionInfo.swift
+│   └── OpenAIModels.swift
 ├── ViewModels/
 │   ├── CameraViewModel.swift
 │   ├── AnalysisViewModel.swift
@@ -31,11 +33,15 @@ CalAItest/
 ├── Views/
 │   ├── Camera/
 │   ├── Analysis/
-│   └── History/
+│   ├── History/
+│   ├── SettingsView.swift
+│   └── SupportViews.swift    
 ├── Services/
 │   ├── OpenAIService.swift
-│   └── DataPersistence.swift
+│   ├── APIKeyManager.swift
+│   └── DataController.swift
 └── Utils/
+    ├── Constants.swift
     └── Extensions.swift
 ```
 

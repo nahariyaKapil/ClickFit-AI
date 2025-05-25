@@ -1,7 +1,7 @@
-# CalAItest Clone - Product Requirements Document
+# ClickFit AI - Product Requirements Document
 
 ## Product Overview
-CalAItest Clone is an iOS application that uses AI-powered image recognition to analyze food photos and provide detailed nutritional information. Users can take photos of their meals, receive instant calorie and nutrient breakdowns, edit the analysis, and track their dietary history.
+ClickFit AI is an iOS application that uses AI-powered image recognition to analyze food photos and provide detailed nutritional information. Users can take photos of their meals, receive instant calorie and nutrient breakdowns, edit the analysis, and track their dietary history.
 
 ## Core Features
 

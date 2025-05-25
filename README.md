@@ -1,4 +1,4 @@
-# CalAItest Clone - AI-Powered Food Analysis iOS App
+# ClickFit AI - AI-Powered Food Analysis iOS App
 
 A Swift-based iOS application that uses OpenAI's Vision API to analyze food photos and provide detailed nutritional information.
 
@@ -41,7 +41,7 @@ cd calai-clone
 3. **Important**: Never commit API keys to version control
 
 ### 3. Configure Project Settings
-1. Open `CalAItest.xcodeproj` in Xcode
+1. Open `ClickFit AI.xcodeproj` in Xcode
 2. Select the project in navigator
 3. Update Bundle Identifier to something unique (e.g., `com.yourname.calai`)
 4. Select your Development Team
@@ -58,7 +58,7 @@ pod install
 ## Build & Run
 
 ### Using Xcode
-1. Open `CalAItest.xcodeproj` (or `.xcworkspace` if using CocoaPods)
+1. Open `ClickFit AI.xcodeproj` (or `.xcworkspace` if using CocoaPods)
 2. Select target device (iPhone simulator or real device)
 3. Press `Cmd+R` to build and run
 
@@ -71,9 +71,9 @@ pod install
 ## Project Structure
 
 ```
-CalAItest/
+ClickFit AI/
 ├── App/
-│   ├── CalAItestApp.swift         # App entry point
+│   ├── ClickFit AIApp.swift         # App entry point
 │   └── ContentView.swift       # Main tab view
 ├── Models/
 │   ├── FoodAnalysis.swift      # Core data model
@@ -148,7 +148,7 @@ Cmd+Shift+U
 ### Common Issues
 
 1. **Camera Permission Denied**
-   - Go to Settings → CalAItest → Enable Camera
+   - Go to Settings → ClickFit AI → Enable Camera
    - Reset permissions in Settings → General → Reset
 
 2. **API Key Invalid**
