@@ -7,6 +7,11 @@ struct SettingsView: View {
     @State private var showingAPIKeyInfo = false
     @State private var hasUnsavedChanges = false
     @State private var showingClearConfirmation = false
+    @State private var showingPrivacyPolicy = false
+    @State private var showingHelpSupport = false
+    @State private var userRating: Int = 0
+    @State private var hasRated = false
+    @State private var showingRatingPopup = false
     @Environment(\.dismiss) private var dismiss
     @FocusState private var isTextFieldFocused: Bool
     
@@ -26,23 +31,13 @@ struct SettingsView: View {
                 
                 ScrollView {
                     VStack(spacing: 20) {
-                        // Header
+                        // Header - Removed Done button
                         HStack {
                             Text("Settings")
                                 .font(.system(size: 34, weight: .bold, design: .rounded))
                                 .foregroundColor(.white)
                             
                             Spacer()
-                            
-                            Button("Done") {
-                                if hasUnsavedChanges {
-                                    saveAPIKey()
-                                }
-                                isTextFieldFocused = false
-                                dismiss()
-                            }
-                            .font(.system(size: 18, weight: .medium))
-                            .foregroundColor(.cyan)
                         }
                         .padding(.horizontal, 25)
                         .padding(.top, 60)
@@ -66,8 +61,14 @@ struct SettingsView: View {
                         .padding(.horizontal, 20)
                         
                         // Support Section
-                        ModernSupportSection()
-                            .padding(.horizontal, 20)
+                        ModernSupportSection(
+                            showingPrivacyPolicy: $showingPrivacyPolicy,
+                            showingHelpSupport: $showingHelpSupport,
+                            showingRatingPopup: $showingRatingPopup,
+                            userRating: userRating,
+                            hasRated: hasRated
+                        )
+                        .padding(.horizontal, 20)
                         
                         // App Information
                         ModernAppInfoSection()
@@ -83,6 +84,7 @@ struct SettingsView: View {
             .navigationBarHidden(true)
             .onAppear {
                 loadCurrentAPIKey()
+                loadUserRating()
             }
             .onTapGesture {
                 isTextFieldFocused = false
@@ -105,6 +107,15 @@ struct SettingsView: View {
             } message: {
                 Text("Are you sure you want to remove your API key? The app will use demo data for analysis.")
             }
+            .sheet(isPresented: $showingPrivacyPolicy) {
+                PrivacyPolicyView()
+            }
+            .sheet(isPresented: $showingHelpSupport) {
+                HelpSupportView()
+            }
+            .sheet(isPresented: $showingRatingPopup) {
+                RatingPopupView(userRating: $userRating, hasRated: $hasRated)
+            }
         }
         .preferredColorScheme(.dark)
     }
@@ -112,6 +123,11 @@ struct SettingsView: View {
     private func loadCurrentAPIKey() {
         apiKey = apiKeyManager.currentAPIKey
         hasUnsavedChanges = false
+    }
+    
+    private func loadUserRating() {
+        userRating = UserDefaults.standard.integer(forKey: "userRating")
+        hasRated = userRating > 0
     }
     
     private func saveAPIKey() {
@@ -234,7 +250,9 @@ struct ModernAPIConfigCard: View {
                         }
                         .onSubmit {
                             isTextFieldFocused = false
-                            saveAction()
+                            if hasUnsavedChanges {
+                                saveAction()
+                            }
                         }
                 }
                 .padding()
@@ -396,6 +414,12 @@ struct APIStatusMessage: View {
 
 // MARK: - Modern Support Section
 struct ModernSupportSection: View {
+    @Binding var showingPrivacyPolicy: Bool
+    @Binding var showingHelpSupport: Bool
+    @Binding var showingRatingPopup: Bool
+    let userRating: Int
+    let hasRated: Bool
+    
     var body: some View {
         VStack(spacing: 12) {
             SectionHeader(title: "Support", icon: "questionmark.circle")
@@ -403,21 +427,87 @@ struct ModernSupportSection: View {
             ModernSettingsRow(
                 icon: "doc.text",
                 title: "Privacy Policy",
-                color: .blue
+                color: .blue,
+                action: { showingPrivacyPolicy = true }
             )
             
             ModernSettingsRow(
                 icon: "questionmark.circle",
                 title: "Help & Support",
-                color: .green
+                color: .green,
+                action: { showingHelpSupport = true }
             )
             
-            ModernSettingsRow(
-                icon: "star",
-                title: "Rate This App",
-                color: .yellow
+            ModernRatingRow(
+                showingRatingPopup: $showingRatingPopup,
+                userRating: userRating,
+                hasRated: hasRated
             )
         }
+    }
+}
+
+// MARK: - Modern Rating Row
+struct ModernRatingRow: View {
+    @Binding var showingRatingPopup: Bool
+    let userRating: Int
+    let hasRated: Bool
+    @State private var isPressed = false
+    
+    var body: some View {
+        HStack {
+            Image(systemName: "star")
+                .font(.system(size: 20))
+                .foregroundColor(.yellow)
+                .frame(width: 30)
+            
+            Text("Rate This App")
+                .font(.system(size: 16))
+                .foregroundColor(.white)
+            
+            Spacer()
+            
+            if hasRated {
+                HStack(spacing: 2) {
+                    ForEach(1...5, id: \.self) { index in
+                        Image(systemName: index <= userRating ? "star.fill" : "star")
+                            .font(.system(size: 14))
+                            .foregroundColor(.yellow)
+                    }
+                }
+            }
+            
+            Image(systemName: "chevron.right")
+                .font(.system(size: 14))
+                .foregroundColor(.white.opacity(0.3))
+        }
+        .padding(16)
+        .background(
+            RoundedRectangle(cornerRadius: 15)
+                .fill(
+                    LinearGradient(
+                        gradient: Gradient(colors: [
+                            Color.white.opacity(0.08),
+                            Color.white.opacity(0.04)
+                        ]),
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 15)
+                        .stroke(Color.white.opacity(0.1), lineWidth: 1)
+                )
+        )
+        .scaleEffect(isPressed ? 0.98 : 1.0)
+        .onTapGesture {
+            showingRatingPopup = true
+        }
+        .onLongPressGesture(minimumDuration: 0.1, maximumDistance: .infinity, pressing: { pressing in
+            withAnimation(.spring(response: 0.3)) {
+                isPressed = pressing
+            }
+        }, perform: {})
     }
 }
 
@@ -533,6 +623,7 @@ struct ModernSettingsRow: View {
     let icon: String
     let title: String
     let color: Color
+    let action: () -> Void
     @State private var isPressed = false
     
     var body: some View {
@@ -572,7 +663,7 @@ struct ModernSettingsRow: View {
         )
         .scaleEffect(isPressed ? 0.98 : 1.0)
         .onTapGesture {
-            // Handle row tap
+            action()
         }
         .onLongPressGesture(minimumDuration: 0.1, maximumDistance: .infinity, pressing: { pressing in
             withAnimation(.spring(response: 0.3)) {

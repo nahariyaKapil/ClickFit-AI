@@ -95,25 +95,37 @@ struct CameraView: View {
                         } else if isCameraActive && viewModel.isAuthorized {
                             // Live Camera Preview
                             ZStack {
-                                CameraPreviewView(session: viewModel.session)
-                                    .frame(height: geometry.size.height * 0.55)
-                                    .cornerRadius(25)
-                                    .overlay(
-                                        RoundedRectangle(cornerRadius: 25)
-                                            .stroke(Color.cyan.opacity(0.5), lineWidth: 2)
-                                    )
-                                    .shadow(color: .cyan.opacity(0.3), radius: 10, x: 0, y: 5)
-                                
-                                // Camera overlay
-                                CameraOverlay()
+                                if viewModel.isSessionReady {
+                                    CameraPreviewView(session: viewModel.session)
+                                        .frame(height: geometry.size.height * 0.55)
+                                        .cornerRadius(25)
+                                        .overlay(
+                                            RoundedRectangle(cornerRadius: 25)
+                                                .stroke(Color.cyan.opacity(0.5), lineWidth: 2)
+                                        )
+                                        .shadow(color: .cyan.opacity(0.3), radius: 10, x: 0, y: 5)
+                                    
+                                    // Camera overlay
+                                    CameraOverlay()
+                                } else {
+                                    // Loading state while camera is initializing
+                                    RoundedRectangle(cornerRadius: 25)
+                                        .fill(Color.black)
+                                        .frame(height: geometry.size.height * 0.55)
+                                        .overlay(
+                                            VStack(spacing: 20) {
+                                                ProgressView()
+                                                    .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                                                    .scaleEffect(1.5)
+                                                
+                                                Text("Initializing Camera...")
+                                                    .font(.system(size: 16))
+                                                    .foregroundColor(.white.opacity(0.7))
+                                            }
+                                        )
+                                }
                             }
                             .padding(.horizontal, 20)
-                            .onAppear {
-                                viewModel.startSession()
-                            }
-                            .onDisappear {
-                                viewModel.stopSession()
-                            }
                         } else {
                             // Camera Ready / Permission Required View
                             ModernCameraPlaceholder(isAuthorized: viewModel.isAuthorized)
@@ -179,7 +191,7 @@ struct CameraView: View {
                                     }
                                 }
                             }
-                            .disabled(viewModel.isCapturing)
+                            .disabled(viewModel.isCapturing || (isCameraActive && !viewModel.isSessionReady))
                             .scaleEffect(viewModel.isCapturing ? 0.95 : 1.0)
                             .animation(.spring(response: 0.3), value: viewModel.isCapturing)
                             
@@ -233,15 +245,18 @@ struct CameraView: View {
     private func handleCameraButtonPress() {
         if viewModel.isAuthorized {
             if isCameraActive {
-                viewModel.capturePhoto { image in
-                    if let capturedImage = image {
-                        selectedImage = capturedImage
-                        closeCameraSession()
+                if viewModel.isSessionReady && viewModel.isSessionRunning {
+                    viewModel.capturePhoto { image in
+                        if let capturedImage = image {
+                            selectedImage = capturedImage
+                            closeCameraSession()
+                        }
                     }
                 }
             } else {
                 clearSelectedImage()
                 isCameraActive = true
+                viewModel.startSession()
             }
         } else {
             showingPermissionAlert = true
@@ -430,42 +445,49 @@ struct CameraBracket: Shape {
     }
 }
 
-// MARK: - Camera Preview View (unchanged)
+// MARK: - Camera Preview View - Fixed
 struct CameraPreviewView: UIViewRepresentable {
     let session: AVCaptureSession
     
-    func makeUIView(context: Context) -> UIView {
-        let view = UIView(frame: .zero)
+    class VideoPreviewView: UIView {
+        override class var layerClass: AnyClass {
+            AVCaptureVideoPreviewLayer.self
+        }
+        
+        var videoPreviewLayer: AVCaptureVideoPreviewLayer {
+            return layer as! AVCaptureVideoPreviewLayer
+        }
+    }
+    
+    func makeUIView(context: Context) -> VideoPreviewView {
+        let view = VideoPreviewView()
         view.backgroundColor = .black
-        
-        let previewLayer = AVCaptureVideoPreviewLayer(session: session)
-        previewLayer.videoGravity = .resizeAspectFill
-        previewLayer.frame = view.bounds
-        view.layer.addSublayer(previewLayer)
-        
+        view.videoPreviewLayer.session = session
+        view.videoPreviewLayer.videoGravity = .resizeAspectFill
+        view.videoPreviewLayer.connection?.videoOrientation = .portrait
         return view
     }
     
-    func updateUIView(_ uiView: UIView, context: Context) {
+    func updateUIView(_ uiView: VideoPreviewView, context: Context) {
+        // Update orientation if needed
         DispatchQueue.main.async {
-            if let layer = uiView.layer.sublayers?.first as? AVCaptureVideoPreviewLayer {
-                layer.frame = uiView.bounds
-            }
+            uiView.videoPreviewLayer.connection?.videoOrientation = .portrait
         }
     }
 }
 
-// MARK: - Camera ViewModel (unchanged from original)
+// MARK: - Camera ViewModel (Improved)
 @MainActor
 class CameraViewModel: NSObject, ObservableObject {
     @Published var isAuthorized = false
     @Published var isCapturing = false
+    @Published var isSessionReady = false
+    @Published var isSessionRunning = false
     
     let session = AVCaptureSession()
     private let photoOutput = AVCapturePhotoOutput()
     private var photoCompletionHandler: ((UIImage?) -> Void)?
-    private var isConfiguring = false
-    private var isSetupComplete = false
+    private let sessionQueue = DispatchQueue(label: "camera.session.queue")
     
     override init() {
         super.init()
@@ -476,13 +498,13 @@ class CameraViewModel: NSObject, ObservableObject {
         switch AVCaptureDevice.authorizationStatus(for: .video) {
         case .authorized:
             isAuthorized = true
-            setupCameraOnce()
+            setupCamera()
         case .notDetermined:
             AVCaptureDevice.requestAccess(for: .video) { [weak self] granted in
                 DispatchQueue.main.async {
                     self?.isAuthorized = granted
                     if granted {
-                        self?.setupCameraOnce()
+                        self?.setupCamera()
                     }
                 }
             }
@@ -491,65 +513,89 @@ class CameraViewModel: NSObject, ObservableObject {
         }
     }
     
-    private func setupCameraOnce() {
-        guard isAuthorized && !isConfiguring && !isSetupComplete else { return }
-        
-        isConfiguring = true
-        
-        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+    private func setupCamera() {
+        sessionQueue.async { [weak self] in
             guard let self = self else { return }
             
             self.session.beginConfiguration()
-            
-            guard let videoDevice = AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: .back),
-                  let videoInput = try? AVCaptureDeviceInput(device: videoDevice),
-                  self.session.canAddInput(videoInput) else {
-                self.session.commitConfiguration()
-                DispatchQueue.main.async {
-                    self.isConfiguring = false
-                }
-                return
-            }
-            
-            self.session.addInput(videoInput)
-            
-            guard self.session.canAddOutput(self.photoOutput) else {
-                self.session.commitConfiguration()
-                DispatchQueue.main.async {
-                    self.isConfiguring = false
-                }
-                return
-            }
-            
             self.session.sessionPreset = .photo
-            self.session.addOutput(self.photoOutput)
+            
+            // Add video input
+            do {
+                guard let videoDevice = AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: .back) else {
+                    print("Failed to get camera device")
+                    self.session.commitConfiguration()
+                    return
+                }
+                
+                let videoInput = try AVCaptureDeviceInput(device: videoDevice)
+                
+                if self.session.canAddInput(videoInput) {
+                    self.session.addInput(videoInput)
+                } else {
+                    print("Couldn't add video input")
+                    self.session.commitConfiguration()
+                    return
+                }
+            } catch {
+                print("Couldn't create video input: \(error)")
+                self.session.commitConfiguration()
+                return
+            }
+            
+            // Add photo output
+            if self.session.canAddOutput(self.photoOutput) {
+                self.session.addOutput(self.photoOutput)
+                self.photoOutput.isHighResolutionCaptureEnabled = true
+            } else {
+                print("Couldn't add photo output")
+                self.session.commitConfiguration()
+                return
+            }
+            
             self.session.commitConfiguration()
             
             DispatchQueue.main.async {
-                self.isConfiguring = false
-                self.isSetupComplete = true
+                self.isSessionReady = true
             }
         }
     }
     
     func startSession() {
-        guard isAuthorized && !session.isRunning && !isConfiguring && isSetupComplete else { return }
+        guard isAuthorized && isSessionReady else { return }
         
-        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
-            self?.session.startRunning()
+        sessionQueue.async { [weak self] in
+            guard let self = self else { return }
+            
+            if !self.session.isRunning {
+                self.session.startRunning()
+                
+                DispatchQueue.main.async {
+                    self.isSessionRunning = true
+                }
+            }
         }
     }
     
     func stopSession() {
-        guard session.isRunning && !isConfiguring else { return }
-        
-        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
-            self?.session.stopRunning()
+        sessionQueue.async { [weak self] in
+            guard let self = self else { return }
+            
+            if self.session.isRunning {
+                self.session.stopRunning()
+                
+                DispatchQueue.main.async {
+                    self.isSessionRunning = false
+                }
+            }
         }
     }
     
     func capturePhoto(completion: @escaping (UIImage?) -> Void) {
-        guard !isCapturing && isAuthorized && !isConfiguring && isSetupComplete else { return }
+        guard !isCapturing && isAuthorized && isSessionReady && isSessionRunning else {
+            completion(nil)
+            return
+        }
         
         isCapturing = true
         photoCompletionHandler = completion
@@ -557,7 +603,9 @@ class CameraViewModel: NSObject, ObservableObject {
         let settings = AVCapturePhotoSettings()
         settings.flashMode = .auto
         
-        photoOutput.capturePhoto(with: settings, delegate: self)
+        sessionQueue.async { [weak self] in
+            self?.photoOutput.capturePhoto(with: settings, delegate: self!)
+        }
     }
 }
 

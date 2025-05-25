@@ -20,7 +20,7 @@ struct HistoryView: View {
                 .ignoresSafeArea()
                 
                 VStack(spacing: 0) {
-                    // Modern Header
+                    // Modern Header - Fixed height to prevent dancing
                     VStack(spacing: 20) {
                         HStack {
                             Text("History")
@@ -75,7 +75,7 @@ struct HistoryView: View {
                         ModernWeeklyCalendarView(selectedDate: $selectedDate, data: dataController)
                             .padding(.horizontal, 20)
                     }
-                    .padding(.bottom, 20)
+                    .frame(height: 280) // Fixed height for header section
                     .background(
                         LinearGradient(
                             gradient: Gradient(colors: [
@@ -198,6 +198,7 @@ struct ModernWeeklyCalendarView: View {
                 }
             }
         }
+        .frame(height: 100) // Fixed height for calendar
     }
     
     private func isSelected(_ date: Date) -> Bool {
