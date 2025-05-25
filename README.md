@@ -23,8 +23,8 @@ A Swift-based iOS application that uses OpenAI's Vision API to analyze food phot
 
 ### 1. Clone the Repository
 ```bash
-git clone https://github.com/yourusername/calai-clone.git
-cd calai-clone
+git clone https://github.com/nahariyaKapil/ClickFit-AI.git
+cd ClickFit-AI
 ```
 
 ### 2. Set Up OpenAI API Key
@@ -43,7 +43,7 @@ cd calai-clone
 ### 3. Configure Project Settings
 1. Open `ClickFit AI.xcodeproj` in Xcode
 2. Select the project in navigator
-3. Update Bundle Identifier to something unique (e.g., `com.yourname.calai`)
+3. Update Bundle Identifier to something unique (e.g., `com.yourname.ClickFit-AI.`)
 4. Select your Development Team
 5. Configure signing certificates
 
