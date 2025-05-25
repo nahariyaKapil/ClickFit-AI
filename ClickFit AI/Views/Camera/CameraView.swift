@@ -1,6 +1,6 @@
 import SwiftUI
 import PhotosUI
-import AVFoundation
+@preconcurrency import AVFoundation
 
 struct CameraView: View {
     @StateObject private var viewModel = CameraViewModel()
@@ -464,14 +464,14 @@ struct CameraPreviewView: UIViewRepresentable {
         view.backgroundColor = .black
         view.videoPreviewLayer.session = session
         view.videoPreviewLayer.videoGravity = .resizeAspectFill
-        view.videoPreviewLayer.connection?.videoOrientation = .portrait
+        view.videoPreviewLayer.connection?.videoRotationAngle = 90
         return view
     }
     
     func updateUIView(_ uiView: VideoPreviewView, context: Context) {
         // Update orientation if needed
         DispatchQueue.main.async {
-            uiView.videoPreviewLayer.connection?.videoOrientation = .portrait
+            uiView.videoPreviewLayer.connection?.videoRotationAngle = 90
         }
     }
 }
@@ -484,8 +484,8 @@ class CameraViewModel: NSObject, ObservableObject {
     @Published var isSessionReady = false
     @Published var isSessionRunning = false
     
-    let session = AVCaptureSession()
-    private let photoOutput = AVCapturePhotoOutput()
+    nonisolated let session = AVCaptureSession()
+    private nonisolated let photoOutput = AVCapturePhotoOutput()
     private var photoCompletionHandler: ((UIImage?) -> Void)?
     private let sessionQueue = DispatchQueue(label: "camera.session.queue")
     
@@ -546,7 +546,7 @@ class CameraViewModel: NSObject, ObservableObject {
             // Add photo output
             if self.session.canAddOutput(self.photoOutput) {
                 self.session.addOutput(self.photoOutput)
-                self.photoOutput.isHighResolutionCaptureEnabled = true
+                self.photoOutput.maxPhotoDimensions = CMVideoDimensions(width: 4032, height: 3024)
             } else {
                 print("Couldn't add photo output")
                 self.session.commitConfiguration()
@@ -600,10 +600,9 @@ class CameraViewModel: NSObject, ObservableObject {
         isCapturing = true
         photoCompletionHandler = completion
         
-        let settings = AVCapturePhotoSettings()
-        settings.flashMode = .auto
-        
         sessionQueue.async { [weak self] in
+            let settings = AVCapturePhotoSettings()
+            settings.flashMode = .auto
             self?.photoOutput.capturePhoto(with: settings, delegate: self!)
         }
     }
