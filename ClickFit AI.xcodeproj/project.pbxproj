@@ -29,22 +29,9 @@
 		AE649F362DE2179D002302A6 /* ClickFit AIUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "ClickFit AIUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
-/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		AE649F4A2DE21AA2002302A6 /* Exceptions for "ClickFit AI" folder in "ClickFit AI" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				"ClickFit-AI-Info.plist",
-			);
-			target = AE649F1E2DE2179B002302A6 /* ClickFit AI */;
-		};
-/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
-
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		AE649F212DE2179B002302A6 /* ClickFit AI */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-				AE649F4A2DE21AA2002302A6 /* Exceptions for "ClickFit AI" folder in "ClickFit AI" target */,
-			);
 			path = "ClickFit AI";
 			sourceTree = "<group>";
 		};
@@ -416,12 +403,19 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "ClickFit-AI-Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "ClickFit AI";
+				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.healthcare-fitness";
 				INFOPLIST_KEY_NSCameraUsageDescription = "ClickFit AI needs camera access to capture photos of your meals for nutritional analysis";
 				INFOPLIST_KEY_NSFileProviderDomainUsageDescription = "Needs camera";
+				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "ClickFit AI needs permission to save analyzed meal photos to your photo library";
 				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "ClickFit AI needs access to your photo library to select meal photos for analysis";
-				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
-				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
+				INFOPLIST_KEY_UIRequiredDeviceCapabilities = "armv7 camera-flash still-camera wifi";
+				INFOPLIST_KEY_UIRequiresFullScreen = YES;
+				INFOPLIST_KEY_UIStatusBarStyle = UIStatusBarStyleDefault;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -448,12 +442,19 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "ClickFit-AI-Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "ClickFit AI";
+				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.healthcare-fitness";
 				INFOPLIST_KEY_NSCameraUsageDescription = "ClickFit AI needs camera access to capture photos of your meals for nutritional analysis";
 				INFOPLIST_KEY_NSFileProviderDomainUsageDescription = "Needs camera";
+				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "ClickFit AI needs permission to save analyzed meal photos to your photo library";
 				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "ClickFit AI needs access to your photo library to select meal photos for analysis";
-				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
-				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
+				INFOPLIST_KEY_UIRequiredDeviceCapabilities = "armv7 camera-flash still-camera wifi";
+				INFOPLIST_KEY_UIRequiresFullScreen = YES;
+				INFOPLIST_KEY_UIStatusBarStyle = UIStatusBarStyleDefault;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				LD_RUNPATH_SEARCH_PATHS = (
